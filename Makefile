@@ -2,7 +2,6 @@ SHELL := /bin/bash
 
 # Paths
 PROJECT_DIR := $(shell pwd)
-export LIBTORCH := $(PROJECT_DIR)/libtorch
 
 .PHONY: all
 all: rust
