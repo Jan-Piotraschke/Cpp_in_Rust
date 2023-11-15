@@ -33,7 +33,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{Write, BufWriter};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() != 2 {
         eprintln!("usage: example-app <path-to-exported-script-module>");
