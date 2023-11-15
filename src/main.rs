@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         return Err("Expected Tensor".into());
     };
-    
+
     let mut file = BufWriter::new(File::create("output.csv")?);
 
     let output = output.to_device(Device::Cpu).to_kind(Kind::Float);
@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for i in 0..num_rows {
         for j in 0..num_cols {
-            write!(file, "{}", output.double_value(&[i as i64, j as i64]))?;
+            write!(file, "{:.6}", output.double_value(&[i as i64, j as i64]))?;
             if j != num_cols - 1 {
                 write!(file, ",")?;
             }
