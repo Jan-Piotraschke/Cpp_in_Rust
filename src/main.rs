@@ -1,38 +1,23 @@
-// use tch::{kind, Tensor};
+//! # Example of how to use a PyTorch exported script module in Rust
+//!
+//! ## Metadata
+//!
+//! - **Author:** Jan-Piotraschke
+//! - **Date:** 2023-Nov-15
+//! - **License:** [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+//!
+//! ## Current Status
+//!
+//! - **Bugs:** None known at this time.
+//! - **Todo:** Further development tasks to be determined.
 
-// fn grad_example() {
-//     let mut x = Tensor::from(2.0f32)
-//         .to_device(tch::Device::Mps)
-//         .set_requires_grad(true);
-//     let y = &x * &x + &x + 36;
-//     println!("y {}", y.double_value(&[]));
-
-//     x.zero_grad();
-//     y.backward();
-
-//     let dy_over_dx = x.grad();
-//     println!("dy/dx {}", dy_over_dx.double_value(&[]))
-// }
-
-// fn main() {
-//     let t = Tensor::from_slice(&[3, 1, 4, 1, 5]);
-//     t.print(); // works on CPU tensors
-
-//     println!("t(cpu) {:?}", &t);
-//     println!("t device: {:?}", &t.device());
-//     let t = Tensor::randn([5, 4], kind::FLOAT_CPU).to_device(tch::Device::Mps);
-//     t.print();
-//     println!("t(mps) {:?}", &t);
-//     println!("t device: {:?}", &t.device());
-
-//     grad_example();
-// }
 
 use tch::{jit, Tensor, Device, Kind};
 use std::error::Error;
 use std::fs::File;
 use std::io::{Write, BufWriter};
 
+/// Run the PyTorch model and save the output to a CSV file.
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() != 2 {
@@ -49,8 +34,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         data.push(i as f32 * 0.001);
     }
 
-    // let input_tensor = Tensor::of_slice(&data).view([num_steps, 1]);
+    // Create an input tensor.
     let input_tensor = Tensor::from_slice(&data).view([num_steps as i64, 1]);
+    // input_tensor.print(); // print the tensor
+    println!("Input: {:?}", &input_tensor);
 
     let input_ivalue = tch::IValue::Tensor(input_tensor);
     let output_ivalue = module.forward_is(&[input_ivalue])?;
@@ -60,9 +47,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         return Err("Expected Tensor".into());
     };
 
+    let output = output.to_device(Device::Cpu).to_kind(Kind::Float);
+    println!("Output: {:?}", &output);
+
     let mut file = BufWriter::new(File::create("output.csv")?);
 
-    let output = output.to_device(Device::Cpu).to_kind(Kind::Float);
     let sizes = output.size();
     let num_rows = sizes[0] as usize;
     let num_cols = sizes[1] as usize;
